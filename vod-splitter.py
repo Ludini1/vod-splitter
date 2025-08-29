@@ -2,6 +2,9 @@ import cv2
 import youtube_dl
 import numpy as np
 import easyocr
+import time
+
+start_time = time.time()
 
 def download_twitch_vod(url, output_path="."):
     ydl_opts = {
@@ -44,7 +47,12 @@ def preprocess_for_player_names(frame):
 
 def sort_text_by_height(image_path, reader):
     
-    results = reader.readtext(image_path, detail=1)
+    results = reader.readtext(image_path, detail=1,
+                              # Performance optimizations
+                              width_ths=0.7,  # Adjust text width threshold
+                              height_ths=0.7,  # Adjust text height threshold
+                              paragraph=False,  # Disable paragraph grouping
+                              batch_size=1)    # Process one image at a time)
     
     text_with_height = []
     for (bbox, text, confidence) in results:
@@ -143,3 +151,7 @@ for i in range(len(matches_list)):
 
 cap.release()
 del reader
+
+end_time = time.time()
+execution_time = end_time - start_time
+print(f"Program ran for {execution_time:.2f} seconds")
