@@ -132,7 +132,7 @@ while (current_frame < total_frames):
 
 keyframe_cnt = 1
 for key_frame in key_frame_list:
-    print("Processing", keyframe_cnt, "of", len(key_frame_list), "keyframes")
+    print(f"\rProcessing {keyframe_cnt} of {len(key_frame_list)} keyframes", end="", flush=True)
     cap.set(cv2.CAP_PROP_POS_FRAMES, key_frame)
     ret, frame = cap.read()
     areas_of_interest = preprocess_for_player_names(frame)
@@ -157,6 +157,7 @@ for key_frame in key_frame_list:
 
     keyframe_cnt += 1
 
+print("\n\nHere are the detected timestamps:\n")
 for i in range(len(matches_list)):
     print(matches_list[i] + " " + timestamp_list[i])
 
