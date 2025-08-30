@@ -92,7 +92,8 @@ def frames_to_minutes(frames, fps):
 print("Enter a VOD URL:")
 vod_url = input()
 if (vod_url == ""):
-    vod_url = "https://www.twitch.tv/videos/2538239636"
+    print("Please enter a URL")
+    exit()
 
 download_twitch_vod(vod_url, ".")
 
@@ -136,6 +137,9 @@ for key_frame in key_frame_list:
     ret, frame = cap.read()
     areas_of_interest = preprocess_for_player_names(frame)
 
+    name1 = ""
+    name2 = ""
+
     text = sort_text_by_height(areas_of_interest[0], reader)
     if (text): # if text was found in a frame
         name1 = text[0]["text"]
@@ -144,11 +148,12 @@ for key_frame in key_frame_list:
     if (text): # if text was found in a frame
         name2 = text[0]["text"]
 
-    timestamp = str(frames_to_minutes(key_frame, fps)[0]) + ":" + str(frames_to_minutes(key_frame, fps)[1]).zfill(2)
-    matchup = name1 + " vs " + name2
-    if (matchup not in matches_list):
-        matches_list.append(matchup)
-        timestamp_list.append(timestamp)
+    if ((name1 != "") and (name2 != "")): # If text was found
+        timestamp = str(frames_to_minutes(key_frame, fps)[0]) + ":" + str(frames_to_minutes(key_frame, fps)[1]).zfill(2)
+        matchup = name1 + " vs " + name2
+        if (matchup not in matches_list):
+            matches_list.append(matchup)
+            timestamp_list.append(timestamp)
 
     keyframe_cnt += 1
 
