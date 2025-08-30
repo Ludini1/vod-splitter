@@ -4,7 +4,7 @@ import numpy as np
 import easyocr
 import time
 
-start_time = time.time()
+
 
 def download_twitch_vod(url, output_path="."):
     ydl_opts = {
@@ -24,8 +24,8 @@ def preprocess_for_player_names(frame):
     height, width = frame.shape[:2]
     
     # Define regions for player names (adjust these coordinates based on your layout)
-    left_region = frame[0:200, 0:600]  # Top-left area
-    right_region = frame[0:200, width-600:width]  # Top-right area
+    left_region = frame[0:100, 0:600]  # Top-left area
+    right_region = frame[0:100, width-600:width]  # Top-right area
     
     processed_regions = []
     
@@ -89,8 +89,14 @@ def frames_to_minutes(frames, fps):
     minutes, seconds = divmod(int(frames / fps), 60)
     return minutes, seconds
 
-vod_url = "https://www.twitch.tv/videos/2538239636"
+print("Enter a VOD URL:")
+vod_url = input()
+if (vod_url == ""):
+    vod_url = "https://www.twitch.tv/videos/2538239636"
+
 download_twitch_vod(vod_url, ".")
+
+start_time = time.time()
 
 cap = cv2.VideoCapture('output.mp4')
 if not cap.isOpened():
@@ -154,4 +160,4 @@ del reader
 
 end_time = time.time()
 execution_time = end_time - start_time
-print(f"Program ran for {execution_time:.2f} seconds")
+print(f"Processed for {execution_time:.2f} seconds")
