@@ -1,10 +1,21 @@
+import os
+import sys
+
+# Supress FFMPEG logs
+os.environ['OPENCV_FFMPEG_LOGLEVEL'] = '-8'
+# Redirect stderr to null
+if os.name == 'nt':  # Windows
+    sys.stderr = open('nul', 'w')
+else:  # Linux/Mac
+    sys.stderr = open('/dev/null', 'w')
+
 import cv2
 import youtube_dl
 import numpy as np
 import easyocr
 import time
 
-
+cv2.setLogLevel(0)
 
 def download_twitch_vod(url, output_path="."):
     ydl_opts = {
@@ -166,4 +177,5 @@ del reader
 
 end_time = time.time()
 execution_time = end_time - start_time
-print(f"Processed for {execution_time:.2f} seconds")
+print(f"\nProcessed for {execution_time:.2f} seconds")
+input("Press Enter to exit...")
