@@ -1,4 +1,4 @@
-sudo -H pip install --upgrade youtube-dl
+sudo -H pip install --upgrade yt_dlp
 pip install opencv-python
 pip install easyocr
 pip install numpy

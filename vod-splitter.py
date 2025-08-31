@@ -10,7 +10,7 @@ else:  # Linux/Mac
     sys.stderr = open('/dev/null', 'w')
 
 import cv2
-import youtube_dl
+import yt_dlp
 import numpy as np
 import easyocr
 import time
@@ -19,16 +19,45 @@ cv2.setLogLevel(0)
 
 def download_twitch_vod(url, output_path="."):
     ydl_opts = {
-        'outtmpl': f'{output_path}/output.mp4',
-        'format': 'best',  # Download best quality available
+        "outtmpl": f'{output_path}/output.mp4',
+        "format": "mp4",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36", # default user agent
+        "cookies-from-browser": "chrome" # default browser
     }
     
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
             ydl.download([url])
             print("Download completed!")
         except Exception as e:
-            print(f"Error: {e}")
+            if ("HTTP Error 403" in str(e)):
+                print("Youtube has detected the script as a bot, you will need to follow the following steps:\n")
+                print("1. Refresh your preferred browser\n")
+                print("2. Provide your browser user-agent, the easiest way to find this is as follows:")
+                print("""The simplest way is to type \"my user-agent\" into duckduckgo, google, etc.
+                         \nFor Firefox browsers, you can find the user-agent by navigating to about:support
+                         \nFor Chromium-based browsers, you can find it in chrome://version (or your vendor prefix like brave://version, etc)""")
+                print("\nPlease enter your user-agent:")
+                user_agent = input()
+                print("\n3. Now provide your browser name: [brave, chrome, chromium, edge, firefox, opera, safari, vivaldi, whale]")
+                browser_name = input()
+                print("Trying download again...")
+
+                ydl_opts = {
+                    "outtmpl": f'{output_path}/output.mp4',
+                    "format": "mp4",
+                    "user-agent": user_agent, # default user agent
+                    "cookies-from-browser": browser_name # default browser
+                }
+
+                try:
+                    ydl = yt_dlp.YoutubeDL(ydl_opts)
+                    ydl.download([url])
+                    print("Download completed!")
+                except Exception as e:
+                    print(f"Error: {e}")
+            else:
+                print(f"Error: {e}")
 
 def preprocess_for_player_names(frame):
 
@@ -67,15 +96,16 @@ def sort_text_by_height(image_path, reader):
     
     text_with_height = []
     for (bbox, text, confidence) in results:
-        bbox = np.array(bbox)
-        height = max(bbox[:, 1]) - min(bbox[:, 1])
-        
-        text_with_height.append({
-            'text': text,
-            'confidence': confidence,
-            'height': height,
-            'bbox': bbox
-        })
+        if (len(text) > 1):
+            bbox = np.array(bbox)
+            height = max(bbox[:, 1]) - min(bbox[:, 1])
+
+            text_with_height.append({
+                'text': text,
+                'confidence': confidence,
+                'height': height,
+                'bbox': bbox
+            })
     
     # Sort by height (tallest first)
     sorted_by_height = sorted(text_with_height, key=lambda x: x['height'], reverse=True)
@@ -153,11 +183,11 @@ for key_frame in key_frame_list:
 
     text = sort_text_by_height(areas_of_interest[0], reader)
     if (text): # if text was found in a frame
-        name1 = text[0]["text"]
+        name1 = text[0]["text"].lower()
 
     text = sort_text_by_height(areas_of_interest[1], reader)
     if (text): # if text was found in a frame
-        name2 = text[0]["text"]
+        name2 = text[0]["text"].lower()
 
     if ((name1 != "") and (name2 != "")): # If text was found
         timestamp = str(frames_to_minutes(key_frame, fps)[0]) + ":" + str(frames_to_minutes(key_frame, fps)[1]).zfill(2)
